@@ -82,7 +82,8 @@ function init() {
 
   // カメラを作成
   const camera = new THREE.PerspectiveCamera(45, width / height);
-  camera.position.set(0, 400, 700);
+  camera.position.set(-300, -300, 400);
+  //camera.position.set(0, 400, 700);
   const controls = new THREE.OrbitControls(camera, document.body);
 
   // 地面を作成
