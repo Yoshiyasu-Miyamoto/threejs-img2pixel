@@ -1,0 +1,110 @@
+// ページの読み込みを待つ
+window.addEventListener('DOMContentLoaded', init);
+
+const objects = [];
+let angle = 0;
+// シーンを作成
+const scene = new THREE.Scene();
+let renderer;
+let balls = [];
+
+function init() {
+  // サイズを指定
+  const width = 960;
+  const height = 540;
+
+  // レンダラーを作成
+  renderer = new THREE.WebGLRenderer({
+    canvas: document.querySelector('#myCanvas'),
+  });
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(width, height);
+
+  // カメラを作成
+  const camera = new THREE.PerspectiveCamera(45, width / height);
+  camera.position.set(0, 400, 700);
+  const controls = new THREE.OrbitControls(camera, document.body);
+
+  // 地面を作成
+  scene.add(new THREE.GridHelper(600));
+  scene.add(new THREE.AxesHelper(300));
+
+  tick();
+
+  // 毎フレーム時に実行されるループイベントです
+  function tick() {
+    if (renderer.info.render.frame % 2 === 0) {
+      balls.push(Ball(
+        0, 
+        0,
+        0,
+        ((Math.random() - 0.5) * 3), 
+        8,
+        ((Math.random() - 0.5) * 3), 
+      ));
+    }
+
+    for (let i = 0; i < balls.length; i++) {
+      balls[i].move();
+      if(balls[i].end()){
+        balls[i].delete();
+        balls.splice(i, 1);
+      }
+    }  
+    
+    // レンダリング
+    renderer.render(scene, camera);
+    requestAnimationFrame(tick);
+  }
+}
+
+function Ball(_x, _y, _z, _xSpeed, _ySpeed, _zSpeed) {
+  const material = new THREE.MeshNormalMaterial({transparent: true, opacity: 0.5});
+  const geometry = new THREE.SphereGeometry(1 + Math.random() * 10, 30, 30);
+  const mesh = new THREE.Mesh(geometry, material);
+
+  mesh.position.set(
+    _x,
+    _y,
+    _z
+  );
+  scene.add(mesh)
+
+  let b = {
+    x: _x,
+    y: _y,
+    z: _z,
+    xSpeed: _xSpeed,
+    ySpeed: _ySpeed,
+    zSpeed: _zSpeed,
+    g: 0.15,
+    
+    move: function() {
+      this.ySpeed -= this.g
+
+      this.x += this.xSpeed
+      this.y += this.ySpeed
+      this.z += this.zSpeed
+      mesh.position.x = this.x
+      mesh.position.y = this.y
+      mesh.position.z = this.z
+    },
+
+    end: function() {  
+      let e = false;
+
+      if (mesh.position.y < 0) {
+        e = true;
+      }
+
+      return e;
+    },
+
+    delete: function() {  
+      scene.remove(mesh);
+      mesh.material.dispose();
+      mesh.geometry.dispose();
+    } 
+  }
+  return b;
+}
